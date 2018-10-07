@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block form %}
+<table class="recipe">
+<tr><th>ID</th><th>Name</th><th>Source</th><th>Time</th><th>Level</th><th>Calorific</th><th>Text</th><th>Chapter</th>
+    <th>Ingredient</th><th>Preference</th></tr>
+{% for recipe in contents_dict["recipe"] %}
+    <tr>
+        {% for item in recipe %}
+            <td>{{ item }}</td>
+        {% endfor %}
+        <td class="after-bt"><a href="{{ url_for('change', changing=recipe.id, chtype='recype') }}">Change</a></td>
+        <td class="after-bt"><a href="{{ url_for('delete', deleting=recipe.id, chtype='recype') }}">Delete</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+<table class="chapter">
+<tr><th>ID</th><th>Name</th><th>Recipes</th>
+{% for i in range(contents_dict["chapter"]|length) %}
+    <tr>
+        {% for item in contents_dict["chapter"][i] %}
+            <td>{{ item }}</td>
+        {% endfor %}
+        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='chapter') }} ">Change</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+<table class="preference">
+<tr><th>ID</th><th>Name</th><th>Recipes</th>
+{% for i in range(contents_dict["preference"]|length) %}
+    <tr>
+        {% for item in contents_dict["preference"][i] %}
+            <td>{{ item }}</td>
+        {% endfor %}
+        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='preference') }} ">Change</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+<table class="ingredient">
+<tr><th>ID</th><th>Name</th><th>Recipes</th>
+{% for i in range(contents_dict["ingredient"]|length) %}
+    <tr>
+        {% for item in contents_dict["ingredient"][i] %}
+            <td>{{ item }}</td>
+        {% endfor %}
+        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='ingredient') }} ">Change</a></td>
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block form %}
+    <h1>Create {{ instance }}</h1>
+    <form action="" method="post" name="find">
+    {{form.hidden_tag()}}
+    <!--<p>-->
+        <!--Id:<br>-->
+        <!--{{ form.id }}<br>-->
+        <!--{% for error in form.errors.id %}-->
+            <!--<span class="error">[{{error}}]</span>-->
+        <!--{% endfor %}<br>-->
+    <!--</p>-->
+    <p>
+        Name:<br>
+        {{ form.name }}<br>
+        {% for error in form.errors.name %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    {% if instance!="recipe" %}
+        <p>
+            Recipe:<br>
+            {{ form.recipe }}<br>
+            {% for error in form.errors.recipe %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+    {% else %}
+        <p>
+            Source:<br>
+            {{ form.source }}<br>
+            {% for error in form.errors.source %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p>
+            Time:<br>
+            {{ form.time }}<br>
+            {% for error in form.errors.time %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p>
+            Level:<br>
+            {{ form.level }}<br>
+            {% for error in form.errors.level %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p>
+            Calorific:<br>
+            {{ form.calorific }}<br>
+            {% for error in form.errors.calorific %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p>
+            Text:<br>
+            {{ form.text }}<br>
+            {% for error in form.errors.text %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p>
+            Chapter:<br>
+            {{ form.chapter }}<br>
+            {% for error in form.errors.chapter %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p>
+            Preference:<br>
+            {{ form.preference }}<br>
+            {% for error in form.errors.preference %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p>
+            Ingredients:<br>
+            {{ form.ingredients }}<br>
+            {% for error in form.errors.ingredients %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+    {% endif %}
+    <p><input type="submit" class="form-element button" value="Create"></p>
+</form>
+{% endblock %}
