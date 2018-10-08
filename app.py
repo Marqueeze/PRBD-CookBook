@@ -63,15 +63,10 @@ def change(changing, chtype):
 
 @app.route('/delete/<chtype>/<deleting>', methods=['GET', 'POST'])
 def delete(deleting, chtype):
-    form_dict = {
-        "chapter": ChapterForm,
-        "recipe": RecipeForm,
-        "ingredient": IngredientForm,
-        "preference": PreferenceForm
-    }
-    form = form_dict[chtype]
-    form = form()
-    return render_template("delete.html", form=form)
+    inst = instance_dict[chtype].query.get(deleting)
+    db.session.delete(inst)
+    db.session.commit()
+    return redirect(url_for('index'))
 
 
 def Clear_DB():

@@ -8,6 +8,3 @@ SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 CSRF_ENABLED = True
 SECRET_KEY = 'you-will-never-guess'
-
-TEACHER_PASSWORD = 'I am a teacher'
-ADMIN_PASSWORD = 'root'

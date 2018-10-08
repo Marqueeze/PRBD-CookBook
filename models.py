@@ -2,10 +2,10 @@ from __init__ import db
 
 
 class RecipeIngredient(db.Model):
-    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id', ondelete="CASCADE"), primary_key=True, autoincrement=False)
-    ingredient_id = db.Column(db.INT, db.ForeignKey('ingredient.id', ondelete="CASCADE"), primary_key=True, autoincrement=False)
-    recipes = db.relationship("Recipe", back_populates='rec_ingr')
-    ingredients = db.relationship("Ingredient", back_populates='rec_ingr')
+    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id', ondelete='CASCADE'), primary_key=True, autoincrement=False)
+    ingredient_id = db.Column(db.INT, db.ForeignKey('ingredient.id', ondelete='CASCADE'), primary_key=True, autoincrement=False)
+    recipes = db.relationship("Recipe", back_populates='rec_ingr', cascade='all')
+    ingredients = db.relationship("Ingredient", back_populates='rec_ingr', cascade='all')
 
     def __repr__(self):
         return "RecId: {}, IngId: {}".format(self.recipe_id, self.ingredient_id)
@@ -18,10 +18,10 @@ class RecipeIngredient(db.Model):
 
 
 class RecipePreference(db.Model):
-    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id', ondelete="CASCADE"), primary_key=True, autoincrement=False)
-    preference_id = db.Column(db.INT, db.ForeignKey('preference.id', ondelete="CASCADE"), primary_key=True, autoincrement=False)
-    recipes = db.relationship("Recipe", back_populates='rec_pref')
-    preferences = db.relationship("Preference", back_populates='rec_pref')
+    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id', ondelete='CASCADE'), primary_key=True, autoincrement=False)
+    preference_id = db.Column(db.INT, db.ForeignKey('preference.id', ondelete='CASCADE'), primary_key=True, autoincrement=False)
+    recipes = db.relationship("Recipe", back_populates='rec_pref', cascade='all')
+    preferences = db.relationship("Preference", back_populates='rec_pref', cascade='all')
 
     def __repr__(self):
         return "RecId: {}, PrefId: {}".format(self.recipe_id, self.preference_id)
@@ -37,7 +37,7 @@ class Chapter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.TEXT(16), index=True, unique=True)
 
-    recipes = db.relationship("Recipe")
+    recipes = db.relationship("Recipe", cascade='all')
 
     def __init__(self, name):
         self.name = name
@@ -63,8 +63,8 @@ class Recipe(db.Model):
     text = db.Column(db.TEXT(8192))
 
     chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id", ondelete='CASCADE'), index=True)
-    rec_ingr = db.relationship("RecipeIngredient", back_populates='recipes')
-    rec_pref = db.relationship("RecipePreference", back_populates='recipes')
+    rec_ingr = db.relationship("RecipeIngredient", back_populates='recipes', cascade='all')
+    rec_pref = db.relationship("RecipePreference", back_populates='recipes', cascade='all')
 
     def __repr__(self):
         return "Name: {}".format(self.name)
@@ -93,7 +93,7 @@ class Ingredient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.TEXT(16), index=True)
 
-    rec_ingr = db.relationship("RecipeIngredient", back_populates='ingredients')
+    rec_ingr = db.relationship("RecipeIngredient", back_populates='ingredients', cascade='all')
 
     def __repr__(self):
         return "Name: {}".format(self.name)
@@ -111,7 +111,7 @@ class Preference(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.TEXT(16), index=True)
 
-    rec_pref = db.relationship("RecipePreference", back_populates='preferences')
+    rec_pref = db.relationship("RecipePreference", back_populates='preferences', cascade='all')
 
     def __repr__(self):
         return "Name: {}".format(self.name)
