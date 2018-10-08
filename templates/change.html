@@ -1,10 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block form %}
+<form action="" method="post" name="find">
+    <div class="change">
+    {{form.hidden_tag()}}
+    <p class="change">
+        Name:<br>
+        {{ form.name }}<br>
+        {% for error in form.errors.name %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change">
+        Source:<br>
+        {{ form.source }}<br>
+        {% for error in form.errors.source %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change">
+        Time:<br>
+        {{ form.time }}<br>
+        {% for error in form.errors.time %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change">
+        Level:<br>
+        {{ form.level }}<br>
+        {% for error in form.errors.level %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change">
+        Calorific:<br>
+        {{ form.calorific }}<br>
+        {% for error in form.errors.calorific %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change">
+        Chapter:<br>
+        {{ form.chapter }}<br>
+        {% for error in form.errors.chapter %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change">
+        Preference:<br>
+        {{ form.preferences }}<br>
+        {% for error in form.errors.preference %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change">
+        Ingredients:<br>
+        {{ form.ingredients }}<br>
+        {% for error in form.errors.ingredients %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change">
+        Text:<br>
+        {{ form.text }}<br>
+        {% for error in form.errors.text %}
+            <span class="error">[{{error}}]</span>
+        {% endfor %}<br>
+    </p>
+    <p class="change button">
+        <input type="submit" class="" value="Confirm changes">
+    </p>
+    </div>
+</form>
+<table class="recipe">
+<tr><th>ID</th><th>Name</th><th>Source</th><th>Time</th><th>Level</th><th>Calorific</th><th>Text</th><th>Chapter</th>
+    <th>Ingredient</th><th>Preference</th></tr>
+{% for recipe in contents_dict["recipe"] %}
+    <tr>
+        {% if ((chtype == 'recipe') and ( ''|join(index) == ''|join(recipe.id) )) %}
+            <td>{{ recipe.id }}</td>
+        {% for i in "Refactor" %}
+            <td> {{ i }} </td>
+        {% endfor %}
+        {% else %}
+            {% for item in recipe %}
+                <td>{{ item }}</td>
+            {% endfor %}
+            <td class="after-bt"><a href="{{ url_for('change', changing=recipe.id, chtype='recipe') }}">Change</a></td>
+            <td class="after-bt"><a href="{{ url_for('delete', deleting=recipe.id, chtype='recipe') }}">Delete</a></td>
+        {% endif %}
+    </tr>
+{% endfor %}
+</table>
+
+<table class="chapter">
+<tr><th>ID</th><th>Name</th><th>Recipes</th>
+{% for i in range(contents_dict["chapter"]|length) %}
+    <tr>
+        {% for item in contents_dict["chapter"][i] %}
+            <td>{{ item }}</td>
+        {% endfor %}
+        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='chapter') }} ">Change</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+<table class="preference">
+<tr><th>ID</th><th>Name</th><th>Recipes</th>
+{% for i in range(contents_dict["preference"]|length) %}
+    <tr>
+        {% for item in contents_dict["preference"][i] %}
+            <td>{{ item }}</td>
+        {% endfor %}
+        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='preference') }} ">Change</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+<table class="ingredient">
+<tr><th>ID</th><th>Name</th><th>Recipes</th>
+{% for i in range(contents_dict["ingredient"]|length) %}
+    <tr>
+        {% for item in contents_dict["ingredient"][i] %}
+            <td>{{ item }}</td>
+        {% endfor %}
+        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='ingredient') }} ">Change</a></td>
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}

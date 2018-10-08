@@ -2,8 +2,8 @@ from __init__ import db
 
 
 class RecipeIngredient(db.Model):
-    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id'), primary_key=True, autoincrement=False)
-    ingredient_id = db.Column(db.INT, db.ForeignKey('ingredient.id'), primary_key=True, autoincrement=False)
+    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id', ondelete="CASCADE"), primary_key=True, autoincrement=False)
+    ingredient_id = db.Column(db.INT, db.ForeignKey('ingredient.id', ondelete="CASCADE"), primary_key=True, autoincrement=False)
     recipes = db.relationship("Recipe", back_populates='rec_ingr')
     ingredients = db.relationship("Ingredient", back_populates='rec_ingr')
 
@@ -18,8 +18,8 @@ class RecipeIngredient(db.Model):
 
 
 class RecipePreference(db.Model):
-    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id'), primary_key=True, autoincrement=False)
-    preference_id = db.Column(db.INT, db.ForeignKey('preference.id'), primary_key=True, autoincrement=False)
+    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id', ondelete="CASCADE"), primary_key=True, autoincrement=False)
+    preference_id = db.Column(db.INT, db.ForeignKey('preference.id', ondelete="CASCADE"), primary_key=True, autoincrement=False)
     recipes = db.relationship("Recipe", back_populates='rec_pref')
     preferences = db.relationship("Preference", back_populates='rec_pref')
 
@@ -62,15 +62,15 @@ class Recipe(db.Model):
     calorific = db.Column(db.INT)
     text = db.Column(db.TEXT(8192))
 
-    chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id"), index=True)
+    chapter_id = db.Column(db.Integer, db.ForeignKey("chapter.id", ondelete='CASCADE'), index=True)
     rec_ingr = db.relationship("RecipeIngredient", back_populates='recipes')
     rec_pref = db.relationship("RecipePreference", back_populates='recipes')
 
     def __repr__(self):
         return "Name: {}".format(self.name)
 
-    def __iter__(self):
-        return ({
+    def get_item(self, index):
+        return {
             0: str(self.id),
             1: str(self.name),
             2: str(self.source),
@@ -83,7 +83,10 @@ class Recipe(db.Model):
                               for x in RecipeIngredient.query.filter_by(recipe_id=self.id).all())),
             9: ', '.join(list('{}'.format(Preference.query.get(x.preference_id).name)
                               for x in RecipePreference.query.filter_by(recipe_id=self.id).all()))
-        }[i] for i in range(0, 10))
+        }[index]
+
+    def __iter__(self):
+        return (self.get_item(i) for i in range(0, 10))
 
 
 class Ingredient(db.Model):

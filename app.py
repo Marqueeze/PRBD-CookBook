@@ -4,16 +4,24 @@ from models import *
 from forms import *
 from __init__ import app
 
-
-@app.route("/create/<instance>", methods=["GET", "POST"])
-def create(instance):
-    instance_dict = {
+form_dict = {
         "chapter": ChapterForm,
         "recipe": RecipeForm,
         "ingredient": IngredientForm,
         "preference": PreferenceForm
     }
-    form = instance_dict[instance.lower()]
+
+instance_dict = {
+    "chapter": Chapter,
+    "recipe": Recipe,
+    "ingredient": Ingredient,
+    "preference": Preference
+}
+
+
+@app.route("/create/<instance>", methods=["GET", "POST"])
+def create(instance):
+    form = form_dict[instance.lower()]
     form = form()
     if form.validate_on_submit():
         form.create_instance()
@@ -25,41 +33,43 @@ def create(instance):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    p = Preference.query.all()
-    r = Recipe.query.all()
-    c = Chapter.query.all()
-    i = Ingredient.query.all()
     contents_dict = {
-        "chapter": c,
-        "recipe": r,
-        "ingredient": i,
-        "preference": p
+        "chapter": Chapter.query.all(),
+        "recipe": Recipe.query.all(),
+        "ingredient": Ingredient.query.all(),
+        "preference": Preference.query.all()
     }
     return render_template("tables.html", contents_dict=contents_dict)
 
 
 @app.route('/change/<chtype>/<changing>', methods=['GET', 'POST'])
 def change(changing, chtype):
-    instance_dict = {
-        "chapter": ChapterForm,
-        "recipe": RecipeForm,
-        "ingredient": IngredientForm,
-        "preference": PreferenceForm
+    contents_dict = {
+        "chapter": Chapter.query.all(),
+        "recipe": Recipe.query.all(),
+        "ingredient": Ingredient.query.all(),
+        "preference": Preference.query.all()
     }
-    form = instance_dict[chtype]
+    form = form_dict[chtype]
     form = form()
-    return render_template("change.html", form=form)
+    if form.validate_on_submit():
+        form.create_instance(_id=changing)
+        flash('{} changed successfully'.format(chtype.capitalize()))
+        return redirect(url_for('index'))
+    for i in range(len(form)):
+        form.get_item(i).data = instance_dict[chtype].query.get(int(changing)).get_item(i)
+    return render_template("change.html", form=form, index=changing, chtype=chtype, contents_dict=contents_dict)
 
 
 @app.route('/delete/<chtype>/<deleting>', methods=['GET', 'POST'])
 def delete(deleting, chtype):
-    instance_dict = {
+    form_dict = {
         "chapter": ChapterForm,
         "recipe": RecipeForm,
         "ingredient": IngredientForm,
         "preference": PreferenceForm
     }
-    form = instance_dict[chtype]
+    form = form_dict[chtype]
     form = form()
     return render_template("delete.html", form=form)
 

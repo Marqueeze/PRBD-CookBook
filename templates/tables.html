@@ -9,8 +9,8 @@
         {% for item in recipe %}
             <td>{{ item }}</td>
         {% endfor %}
-        <td class="after-bt"><a href="{{ url_for('change', changing=recipe.id, chtype='recype') }}">Change</a></td>
-        <td class="after-bt"><a href="{{ url_for('delete', deleting=recipe.id, chtype='recype') }}">Delete</a></td>
+        <td class="after-bt"><a href="{{ url_for('change', changing=recipe.id, chtype='recipe') }}">Change</a></td>
+        <td class="after-bt"><a href="{{ url_for('delete', deleting=recipe.id, chtype='recipe') }}">Delete</a></td>
     </tr>
 {% endfor %}
 </table>

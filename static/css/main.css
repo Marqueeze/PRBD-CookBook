@@ -216,3 +216,16 @@ td {
   padding: 9px 8px;
   transition: .3s linear;
 }
+
+.change{
+  display: inline-block;
+}
+
+div.change{
+  position:relative;
+}
+
+.change.button{
+  padding-top: 50px;
+  position: absolute;
+}
