@@ -135,6 +135,11 @@ body{
 	line-height: 218px;
 }
 
+.menu li.home:hover{
+    width: 250px;
+    height: 50px;
+}
+
 .menu li a{
 	display: block;
 	width: 200px;
@@ -182,6 +187,10 @@ body{
 
 .settings a:first-child:before{
 	background: url(/static/images/settings.png) center no-repeat;
+}
+
+.home a:first-child:before{
+    background: url(/static/images/home.png) center no-repeat;
 }
 
 .refactoring{
