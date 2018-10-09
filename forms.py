@@ -1,14 +1,34 @@
 from flask_wtf import Form
-from wtforms import StringField, TextAreaField, BooleanField, IntegerField, FloatField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, AnyOf, Regexp, Optional, NoneOf, URL
+from wtforms import StringField, TextAreaField, IntegerField
+from wtforms.validators import AnyOf, Regexp, NoneOf, URL, Optional
 from models import *
 
 
-class RecipeForm(Form):
+class Finder(Form):
     id = IntegerField('id', validators=[Regexp("\d*", message="Id must be an integer")])
     name = StringField('name',
                        validators=[NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
-    source = StringField('source', validators=[URL(message="Source must be an URL")])
+
+    def get_item(self, i):
+        return {
+            0: self.id,
+            1: self.name,
+            2: self.recipe
+        }[i]
+
+    def finder(self, contents: list):
+        for i in range(len(self)):
+            if self.get_item(i).data:
+                # contents = list(filter(lambda x: x.get_item(i) == self.get_item(i).data, contents))
+                contents = list(filter(lambda x: str(self.get_item(i).data) in str(x.get_item(i)), contents))
+        return contents
+
+    def __len__(self):
+        return 3
+
+
+class RecipeForm(Finder):
+    source = StringField('source', validators=[URL(message="Source must be an URL"), Optional()])
     time = StringField('time', validators=[Regexp(".*")])
     level = StringField('level', validators=[Regexp("\d*", message="Level must be an integer")])
     calorific = StringField('calorific', validators=[Regexp("\d*", message="Calorific must be an integer")])
@@ -99,18 +119,8 @@ class RecipeForm(Form):
             raise (Exception("Wrong recipe adding"))
 
 
-class IngredientForm(Form):
-    id = IntegerField('id', validators=[Regexp("\d*", message="Id must be an integer")])
-    name = StringField('name',
-                       validators=[NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
+class IngredientForm(Finder):
     recipe = StringField('recipe', validators=[Regexp(".*")])
-
-    def get_item(self, i):
-        return {
-            0: self.id,
-            1: self.name,
-            2: self.recipe
-        }[i]
 
     def create_instance(self, _id=0):
         if _id == 0:
@@ -124,6 +134,7 @@ class IngredientForm(Form):
 
     def filler(self, i):
         if i:
+            added = []
             for t in self.recipe.data.lower().replace(',', '').split(' '):
                 r = Recipe.query.filter_by(name=t.lower()).first()
                 if r:
@@ -134,27 +145,18 @@ class IngredientForm(Form):
                         r.rec_ingr.append(tmp)
                         db.session.add(tmp)
                         db.session.add(r)
+                        added.append(tmp)
+            for rec_ingr in i.rec_ingr:
+                if rec_ingr not in added:
+                    db.session.delete(rec_ingr)
             db.session.add(i)
             db.session.commit()
         else:
             raise (Exception("Wrong ingredient adding"))
 
-    def __len__(self):
-        return 3
 
-
-class PreferenceForm(Form):
-    id = IntegerField('id', validators=[Regexp("\d*", message="Id must be an integer")])
-    name = StringField('name',
-                       validators=[NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
+class PreferenceForm(Finder):
     recipe = StringField('recipe', validators=[Regexp(".*")])
-
-    def get_item(self, i):
-        return {
-            0: self.id,
-            1: self.name,
-            2: self.recipe
-        }[i]
 
     def create_instance(self, _id=0):
         if _id == 0:
@@ -168,6 +170,7 @@ class PreferenceForm(Form):
 
     def filler(self, p):
         if p:
+            added = []
             for t in self.recipe.data.lower().replace(',', '').split(' '):
                 r = Recipe.query.filter_by(name=t.lower()).first()
                 if r:
@@ -178,27 +181,18 @@ class PreferenceForm(Form):
                         r.rec_pref.append(tmp)
                         db.session.add(tmp)
                         db.session.add(r)
+                        added.append(tmp)
+            for rec_pref in p.rec_pref:
+                if rec_pref not in added:
+                    db.session.delete(rec_pref)
             db.session.add(p)
             db.session.commit()
         else:
             raise (Exception("Wrong ingredient adding"))
 
-    def __len__(self):
-        return 3
 
-
-class ChapterForm(Form):
-    id = IntegerField('id', validators=[Regexp("\d*", message="Id must be an integer")])
-    name = StringField('name',
-                       validators=[NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
+class ChapterForm(Finder):
     recipe = StringField('recipe', validators=[Regexp(".*")])
-
-    def get_item(self, i):
-        return {
-            0: self.id,
-            1: self.name,
-            2: self.recipe
-        }[i]
 
     def create_instance(self, _id=0):
         if _id == 0:
@@ -212,16 +206,20 @@ class ChapterForm(Form):
 
     def filler(self, c):
         if c:
+            added = []
             for t in self.recipe.data.lower().replace(',', '').split(' '):
-                r = Recipe.query.filter_by(name=t.lower()).first()
-                if r:
-                    r.chapter_id = c.id
-                    c.recipes.append(r)
-                    db.session.add(r)
+                rs = Recipe.query.filter_by(name=t.lower()).all()
+                if rs:
+                    for r in rs:
+                        r.chapter_id = c.id
+                        c.recipes.append(r)
+                        db.session.add(r)
+                        added.append(r)
+            for r in c.recipes:
+                if r not in added:
+                    db.session.delete(r)
             db.session.add(c)
             db.session.commit()
         else:
             raise (Exception("Wrong chapter adding"))
 
-    def __len__(self):
-        return 3

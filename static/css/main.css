@@ -176,7 +176,7 @@ body{
 	background: url(/static/images/paper.png) center no-repeat;
 }
 
-.change-info a:first-child:before{
+.find a:first-child:before{
 	background: url(/static/images/info.png) center no-repeat;
 }
 

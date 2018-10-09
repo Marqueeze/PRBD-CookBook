@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block form %}
+<h1>RECIPES</h1><br>
 <table class="recipe">
 <tr><th>ID</th><th>Name</th><th>Source</th><th>Time</th><th>Level</th><th>Calorific</th><th>Text</th><th>Chapter</th>
     <th>Ingredient</th><th>Preference</th></tr>
@@ -15,6 +16,7 @@
 {% endfor %}
 </table>
 
+<h1>CHAPTERS</h1><br>
 <table class="chapter">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
 {% for chapter in contents_dict["chapter"] %}
@@ -28,6 +30,7 @@
 {% endfor %}
 </table>
 
+<h1>PREFERENCES</h1><br>
 <table class="preference">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
 {% for preference in contents_dict["preference"] %}
@@ -41,6 +44,7 @@
 {% endfor %}
 </table>
 
+<h1>INGREDIENTS</h1><br>
 <table class="ingredient">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
 {% for ingredient in contents_dict["ingredient"] %}

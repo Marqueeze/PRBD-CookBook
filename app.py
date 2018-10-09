@@ -14,18 +14,29 @@ instance_dict = {
     "recipe": Recipe,
     "ingredient": Ingredient,
     "preference": Preference
+    }
+
+statistics_dict = {
+    "chapter": len(Chapter.query.all()),
+    "recipe": len(Recipe.query.all()),
+    "ingredient": len(Ingredient.query.all()),
+    "preference": len(Preference.query.all())
 }
 
 
 @app.route("/create/<instance>", methods=["GET", "POST"])
 def create(instance):
-    form = form_dict[instance.lower()]
-    form = form()
-    if form.validate_on_submit():
-        form.create_instance()
-        flash('{} added successfully'.format(instance.capitalize()))
-        return redirect(url_for('index'))
-    return render_template("create.html", form=form, instance=instance.lower())
+    try:
+        form = form_dict[instance.lower()]
+        form = form()
+        if form.validate_on_submit():
+            form.create_instance()
+            flash('{} added successfully'.format(instance.capitalize()))
+            return redirect(url_for('index'))
+        return render_template("create.html", form=form, instance=instance.lower(), statistics_dict=statistics_dict)
+    except Exception:
+        flash("An Error while creating")
+        return redirect(url_for("index"))
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -36,35 +47,58 @@ def index():
         "ingredient": Ingredient.query.all(),
         "preference": Preference.query.all()
     }
-    return render_template("tables.html", contents_dict=contents_dict)
+    return render_template("tables.html", contents_dict=contents_dict, statistics_dict=statistics_dict)
 
 
 @app.route('/change/<chtype>/<changing>', methods=['GET', 'POST'])
 def change(changing, chtype):
+    try:
+        contents_dict = {
+            "chapter": Chapter.query.all(),
+            "recipe": Recipe.query.all(),
+            "ingredient": Ingredient.query.all(),
+            "preference": Preference.query.all()
+        }
+        form = form_dict[chtype]
+        form = form()
+        if form.validate_on_submit():
+            form.create_instance(_id=changing)
+            flash('{} changed successfully'.format(chtype.capitalize()))
+            return redirect(url_for('index'))
+        for i in range(len(form)):
+            form.get_item(i).data = instance_dict[chtype].query.get(int(changing)).get_item(i)
+        return render_template("change.html", form=form, index=int(changing), chtype=chtype, contents_dict=contents_dict,
+                               statistics_dict=statistics_dict)
+    except Exception:
+        flash("An Error while Changing")
+        return redirect(url_for('index'))
+
+
+@app.route('/delete/<chtype>/<deleting>', methods=['GET', 'POST'])
+def delete(deleting, chtype):
+    try:
+        inst = instance_dict[chtype].query.get(deleting)
+        db.session.delete(inst)
+        db.session.commit()
+    except Exception:
+        flash("An Error while deleting")
+    return redirect(url_for('index'))
+
+
+@app.route("/find/<instance>", methods=["GET", "POST"])
+def find(instance):
     contents_dict = {
         "chapter": Chapter.query.all(),
         "recipe": Recipe.query.all(),
         "ingredient": Ingredient.query.all(),
         "preference": Preference.query.all()
     }
-    form = form_dict[chtype]
+    form = form_dict[instance.lower()]
     form = form()
     if form.validate_on_submit():
-        form.create_instance(_id=changing)
-        flash('{} changed successfully'.format(chtype.capitalize()))
+        flash(instance.lower().capitalize()+'s: '+', '.join(list(str(x.id) for x in form.finder(contents_dict[instance]))))
         return redirect(url_for('index'))
-    for i in range(len(form)):
-        form.get_item(i).data = instance_dict[chtype].query.get(int(changing)).get_item(i)
-    return render_template("change.html", form=form, index=int(changing), chtype=chtype, contents_dict=contents_dict)
-
-
-@app.route('/delete/<chtype>/<deleting>', methods=['GET', 'POST'])
-def delete(deleting, chtype):
-    inst = instance_dict[chtype].query.get(deleting)
-    db.session.delete(inst)
-    db.session.commit()
-    return redirect(url_for('index'))
-
+    return render_template("create.html", form=form, instance=instance, statistics_dict=statistics_dict)
 
 
 def Clear_DB():

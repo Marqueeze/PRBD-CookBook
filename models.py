@@ -37,7 +37,7 @@ class Chapter(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.TEXT(16), index=True, unique=True)
 
-    recipes = db.relationship("Recipe", cascade='all')
+    recipes = db.relationship("Recipe")
 
     def __init__(self, name):
         self.name = name

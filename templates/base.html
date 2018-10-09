@@ -6,6 +6,15 @@
     <title>Main</title>
 </head>
 <body>
+    {% with messages = get_flashed_messages() %}
+		{% if messages %}
+		<ul id="flashed">
+			{% for message in messages %}
+				<span class="error">{{message}}</span>
+			{% endfor %}
+		</ul>
+		{% endif %}
+	{% endwith %}
     <div id='menu'>
 		<ul class="menu">
 			<li class="subject">
@@ -15,6 +24,20 @@
                 <a href="/create/recipe">Recipe</a>
 				<a href="/create/ingredient">Ingredient</a>
 			</li>
+            <li class="find">
+                <a>Find</a>
+				<a href="/find/chapter">Chapter</a>
+                <a href="/find/preference">Preference</a>
+                <a href="/find/recipe">Recipe</a>
+				<a href="/find/ingredient">Ingredient</a>
+            </li>
+            <li class="settings">
+                <a>Statistics</a>
+				<a>Chapter count: {{ statistics_dict['chapter'] }}</a>
+                <a>Preference count: {{ statistics_dict['preference'] }}</a>
+                <a>Recipe  count: {{ statistics_dict['recipe'] }}</a>
+				<a>Ingredient  count: {{ statistics_dict['ingredient'] }}</a>
+            </li>
 		</ul>
 	</div>
     {% block form %}{% endblock %}
