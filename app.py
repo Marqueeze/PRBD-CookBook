@@ -1,6 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request, g
-from datetime import datetime
-from models import *
+from flask import render_template, flash, redirect, url_for
 from forms import *
 from __init__ import app
 
@@ -25,7 +23,6 @@ def create(instance):
     form = form()
     if form.validate_on_submit():
         form.create_instance()
-        form.filler()
         flash('{} added successfully'.format(instance.capitalize()))
         return redirect(url_for('index'))
     return render_template("create.html", form=form, instance=instance.lower())
@@ -58,7 +55,7 @@ def change(changing, chtype):
         return redirect(url_for('index'))
     for i in range(len(form)):
         form.get_item(i).data = instance_dict[chtype].query.get(int(changing)).get_item(i)
-    return render_template("change.html", form=form, index=changing, chtype=chtype, contents_dict=contents_dict)
+    return render_template("change.html", form=form, index=int(changing), chtype=chtype, contents_dict=contents_dict)
 
 
 @app.route('/delete/<chtype>/<deleting>', methods=['GET', 'POST'])
@@ -67,6 +64,7 @@ def delete(deleting, chtype):
     db.session.delete(inst)
     db.session.commit()
     return redirect(url_for('index'))
+
 
 
 def Clear_DB():

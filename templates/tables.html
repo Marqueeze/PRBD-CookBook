@@ -17,36 +17,39 @@
 
 <table class="chapter">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
-{% for i in range(contents_dict["chapter"]|length) %}
+{% for chapter in contents_dict["chapter"] %}
     <tr>
-        {% for item in contents_dict["chapter"][i] %}
+        {% for item in chapter %}
             <td>{{ item }}</td>
         {% endfor %}
-        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='chapter') }} ">Change</a></td>
+        <td class="after-bt"><a href="{{ url_for('change', changing=chapter.id, chtype='chapter') }}">Change</a></td>
+        <td class="after-bt"><a href="{{ url_for('delete', deleting=chapter.id, chtype='chapter') }}">Delete</a></td>
     </tr>
 {% endfor %}
 </table>
 
 <table class="preference">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
-{% for i in range(contents_dict["preference"]|length) %}
+{% for preference in contents_dict["preference"] %}
     <tr>
-        {% for item in contents_dict["preference"][i] %}
+        {% for item in preference %}
             <td>{{ item }}</td>
         {% endfor %}
-        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='preference') }} ">Change</a></td>
+        <td class="after-bt"><a href="{{ url_for('change', changing=preference.id, chtype='preference') }}">Change</a></td>
+        <td class="after-bt"><a href="{{ url_for('delete', deleting=preference.id, chtype='preference') }}">Delete</a></td>
     </tr>
 {% endfor %}
 </table>
 
 <table class="ingredient">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
-{% for i in range(contents_dict["ingredient"]|length) %}
+{% for ingredient in contents_dict["ingredient"] %}
     <tr>
-        {% for item in contents_dict["ingredient"][i] %}
+        {% for item in ingredient %}
             <td>{{ item }}</td>
         {% endfor %}
-        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='ingredient') }} ">Change</a></td>
+        <td class="after-bt"><a href="{{ url_for('change', changing=ingredient.id, chtype='ingredient') }}">Change</a></td>
+        <td class="after-bt"><a href="{{ url_for('delete', deleting=ingredient.id, chtype='ingredient') }}">Delete</a></td>
     </tr>
 {% endfor %}
 </table>

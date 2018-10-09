@@ -226,6 +226,11 @@ div.change{
 }
 
 .change.button{
+  padding-top: 18px;
+  position: absolute;
+}
+
+.change.button-recipe{
   padding-top: 50px;
   position: absolute;
 }

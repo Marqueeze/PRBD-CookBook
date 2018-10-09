@@ -2,10 +2,10 @@ from __init__ import db
 
 
 class RecipeIngredient(db.Model):
-    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id', ondelete='CASCADE'), primary_key=True, autoincrement=False)
-    ingredient_id = db.Column(db.INT, db.ForeignKey('ingredient.id', ondelete='CASCADE'), primary_key=True, autoincrement=False)
-    recipes = db.relationship("Recipe", back_populates='rec_ingr', cascade='all')
-    ingredients = db.relationship("Ingredient", back_populates='rec_ingr', cascade='all')
+    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id'), primary_key=True, autoincrement=False)
+    ingredient_id = db.Column(db.INT, db.ForeignKey('ingredient.id'), primary_key=True, autoincrement=False)
+    recipes = db.relationship("Recipe", back_populates='rec_ingr')
+    ingredients = db.relationship("Ingredient", back_populates='rec_ingr')
 
     def __repr__(self):
         return "RecId: {}, IngId: {}".format(self.recipe_id, self.ingredient_id)
@@ -18,10 +18,10 @@ class RecipeIngredient(db.Model):
 
 
 class RecipePreference(db.Model):
-    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id', ondelete='CASCADE'), primary_key=True, autoincrement=False)
-    preference_id = db.Column(db.INT, db.ForeignKey('preference.id', ondelete='CASCADE'), primary_key=True, autoincrement=False)
-    recipes = db.relationship("Recipe", back_populates='rec_pref', cascade='all')
-    preferences = db.relationship("Preference", back_populates='rec_pref', cascade='all')
+    recipe_id = db.Column(db.INT, db.ForeignKey('recipe.id'), primary_key=True, autoincrement=False)
+    preference_id = db.Column(db.INT, db.ForeignKey('preference.id'), primary_key=True, autoincrement=False)
+    recipes = db.relationship("Recipe", back_populates='rec_pref')
+    preferences = db.relationship("Preference", back_populates='rec_pref')
 
     def __repr__(self):
         return "RecId: {}, PrefId: {}".format(self.recipe_id, self.preference_id)
@@ -45,12 +45,15 @@ class Chapter(db.Model):
     def __repr__(self):
         return "Name: {}".format(self.name)
 
-    def __iter__(self):
-        return ({
+    def get_item(self, i):
+        return {
             0: self.id,
             1: self.name,
             2: ", ".join('{}'.format(x.name) for x in self.recipes)
-        }[i] for i in range(0, 3))
+        }[i]
+
+    def __iter__(self):
+        return (self.get_item(i) for i in range(0, 3))
 
 
 class Recipe(db.Model):
@@ -78,7 +81,8 @@ class Recipe(db.Model):
             4: str(self.level),
             5: str(self.calorific),
             6: str(self.text),
-            7: str(Chapter.query.get(self.chapter_id).name),
+            7: ', '.join(list('{}'.format(Chapter.query.get(x.id).name)
+                              for x in Chapter.query.filter_by(id=self.chapter_id).all())),
             8: ', '.join(list('{}'.format(Ingredient.query.get(x.ingredient_id).name)
                               for x in RecipeIngredient.query.filter_by(recipe_id=self.id).all())),
             9: ', '.join(list('{}'.format(Preference.query.get(x.preference_id).name)
@@ -98,13 +102,16 @@ class Ingredient(db.Model):
     def __repr__(self):
         return "Name: {}".format(self.name)
 
-    def __iter__(self):
-        return ({
+    def get_item(self, i):
+        return{
             0: self.id,
             1: self.name,
-            2: ', '.join(map(str, list('{}'.format(Recipe.query.get(x.ingredient_id).name)
-                                       for x in RecipeIngredient.query.filter_by(recipe_id=self.id).all())))
-        }[i] for i in range(0, 3))
+            2: ', '.join(map(str, list('{}'.format(Recipe.query.get(x.recipe_id).name)
+                                       for x in RecipeIngredient.query.filter_by(ingredient_id=self.id).all())))
+        }[i]
+
+    def __iter__(self):
+        return (self.get_item(i) for i in range(0, 3))
 
 
 class Preference(db.Model):
@@ -116,10 +123,13 @@ class Preference(db.Model):
     def __repr__(self):
         return "Name: {}".format(self.name)
 
-    def __iter__(self):
-        return ({
+    def get_item(self, i):
+        return {
             0: self.id,
             1: self.name,
-            2: ', '.join(map(str, list('{}'.format(Recipe.query.get(x.preference_id).name)
-                                       for x in RecipePreference.query.filter_by(recipe_id=self.id).all())))
-        }[i] for i in range(0, 3))
+            2: ', '.join(map(str, list('{}'.format(Recipe.query.get(x.recipe_id).name)
+                                       for x in RecipePreference.query.filter_by(preference_id=self.id).all())))
+        }[i]
+
+    def __iter__(self):
+        return (self.get_item(i) for i in range(0, 3))

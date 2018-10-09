@@ -37,9 +37,12 @@ class RecipeForm(Form):
     def create_instance(self, _id=0):
         if _id == 0:
             r = Recipe(name=self.name.data.lower(), source=self.source.data, time=self.time.data,
-                       level=self.level.data, calorific=self.calorific.data, text=self.text.data.lower(),
-                       chapter_id=Chapter.query.filter_by(name=self.chapter.data.lower()).first().id)
-            self.filler(r)
+                       level=self.level.data, calorific=self.calorific.data, text=self.text.data.lower())
+            c = Chapter.query.filter_by(name=self.chapter.data.lower()).first()
+            if c:
+                r.chapter_id = c.id
+            else:
+                r.chapter_id = None
         else:
             r = Recipe.query.get(_id)
             r.name = self.name.data.lower()
@@ -48,13 +51,20 @@ class RecipeForm(Form):
             r.level = self.level.data
             r.calorific = self.calorific.data
             r.text = self.text.data.lower()
-            r.chapter_id = Chapter.query.filter_by(name=self.chapter.data.lower()).first().id
-            self.filler(r)
+            c = Chapter.query.filter_by(name=self.chapter.data.lower()).first()
+            if c:
+                r.chapter_id = c.id
+            else:
+                r.chapter_id = None
         db.session.add(r)
         db.session.commit()
+        self.filler(Recipe.query.filter_by(name=self.name.data.lower(), source=self.source.data, time=self.time.data,
+                                           level=self.level.data, calorific=self.calorific.data,
+                                           text=self.text.data.lower()).first())
 
     def filler(self, r):
         if r:
+            added = []
             for t in self.ingredients.data.lower().replace(',', '').split(' '):
                 i = Ingredient.query.filter_by(name=t.lower()).first()
                 if i:
@@ -65,18 +75,28 @@ class RecipeForm(Form):
                         i.rec_ingr.append(tmp)
                         db.session.add(i)
                         db.session.add(tmp)
+                    added.append(tmp)
+            for tmp in r.rec_ingr:
+                if tmp not in added:
+                    db.session.delete(tmp)
+            added = []
             for t in self.preferences.data.lower().replace(',', '').split(' '):
                 p = Preference.query.filter_by(name=t.lower()).first()
                 if p:
                     tmp = RecipePreference.query.filter_by(recipe_id=r.id, preference_id=p.id).first()
                     if not tmp:
-                        tmp = RecipePreference(recipe_id=r.id, preferecne_id=p.id)
+                        tmp = RecipePreference(recipe_id=r.id, preference_id=p.id)
                         r.rec_pref.append(tmp)
                         p.rec_pref.append(tmp)
                         db.session.add(p)
                         db.session.add(tmp)
+                    added.append(tmp)
+            for tmp in r.rec_pref:
+                if tmp not in added:
+                    db.session.delete(tmp)
+            db.session.commit()
         else:
-            raise(Exception("Wrong recipe adding"))
+            raise (Exception("Wrong recipe adding"))
 
 
 class IngredientForm(Form):
@@ -85,26 +105,42 @@ class IngredientForm(Form):
                        validators=[NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
     recipe = StringField('recipe', validators=[Regexp(".*")])
 
-    def create_instance(self):
-        i = Ingredient(name=self.name.data.lower())
+    def get_item(self, i):
+        return {
+            0: self.id,
+            1: self.name,
+            2: self.recipe
+        }[i]
+
+    def create_instance(self, _id=0):
+        if _id == 0:
+            i = Ingredient(name=self.name.data.lower())
+        else:
+            i = Ingredient.query.get(_id)
+            i.name = self.name.data.lower()
         db.session.add(i)
         db.session.commit()
+        self.filler(Ingredient.query.filter_by(name=self.name.data.lower()).first())
 
-    def filler(self):
-        i = Ingredient.query.filter_by(name=self.name.data.lower()).first()
+    def filler(self, i):
         if i:
             for t in self.recipe.data.lower().replace(',', '').split(' '):
                 r = Recipe.query.filter_by(name=t.lower()).first()
                 if r:
-                    tmp = RecipeIngredient(ingredient_id=i.id, recipe_id=r.id)
-                    i.rec_ingr.append(tmp)
-                    r.rec_ingr.append(tmp)
-                    db.session.add(tmp)
-                    db.session.add(r)
+                    tmp = RecipeIngredient.query.filter_by(ingredient_id=i.id, recipe_id=r.id).first()
+                    if not tmp:
+                        tmp = RecipeIngredient(ingredient_id=i.id, recipe_id=r.id)
+                        i.rec_ingr.append(tmp)
+                        r.rec_ingr.append(tmp)
+                        db.session.add(tmp)
+                        db.session.add(r)
             db.session.add(i)
             db.session.commit()
         else:
             raise (Exception("Wrong ingredient adding"))
+
+    def __len__(self):
+        return 3
 
 
 class PreferenceForm(Form):
@@ -113,26 +149,42 @@ class PreferenceForm(Form):
                        validators=[NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
     recipe = StringField('recipe', validators=[Regexp(".*")])
 
-    def create_instance(self):
-        p = Preference(name=self.name.data.lower())
+    def get_item(self, i):
+        return {
+            0: self.id,
+            1: self.name,
+            2: self.recipe
+        }[i]
+
+    def create_instance(self, _id=0):
+        if _id == 0:
+            p = Preference(name=self.name.data.lower())
+        else:
+            p = Preference.query.get(_id)
+            p.name = self.name.data.lower()
         db.session.add(p)
         db.session.commit()
+        self.filler(Preference.query.filter_by(name=self.name.data.lower()).first())
 
-    def filler(self):
-        p = Preference.query.filter_by(name=self.name.data.lower()).first()
+    def filler(self, p):
         if p:
             for t in self.recipe.data.lower().replace(',', '').split(' '):
                 r = Recipe.query.filter_by(name=t.lower()).first()
                 if r:
-                    tmp = RecipePreference(preference_id=p.id, recipe_id=r.id)
-                    p.rec_pref.append(tmp)
-                    r.rec_pref.append(tmp)
-                    db.session.add(tmp)
-                    db.session.add(r)
+                    tmp = RecipePreference.query.filter_by(preference_id=p.id, recipe_id=r.id).first()
+                    if not tmp:
+                        tmp = RecipePreference(preference_id=p.id, recipe_id=r.id)
+                        p.rec_pref.append(tmp)
+                        r.rec_pref.append(tmp)
+                        db.session.add(tmp)
+                        db.session.add(r)
             db.session.add(p)
             db.session.commit()
         else:
-            raise(Exception("Wrong preference adding"))
+            raise (Exception("Wrong ingredient adding"))
+
+    def __len__(self):
+        return 3
 
 
 class ChapterForm(Form):
@@ -141,13 +193,24 @@ class ChapterForm(Form):
                        validators=[NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
     recipe = StringField('recipe', validators=[Regexp(".*")])
 
-    def create_instance(self):
-        c = Chapter(self.name.data.lower())
+    def get_item(self, i):
+        return {
+            0: self.id,
+            1: self.name,
+            2: self.recipe
+        }[i]
+
+    def create_instance(self, _id=0):
+        if _id == 0:
+            c = Chapter(name=self.name.data.lower())
+        else:
+            c = Chapter.query.get(_id)
+            c.name = self.name.data.lower()
         db.session.add(c)
         db.session.commit()
+        self.filler(Chapter.query.filter_by(name=self.name.data.lower()).first())
 
-    def filler(self):
-        c = Chapter.query.filter_by(name=self.name.data.lower()).first()
+    def filler(self, c):
         if c:
             for t in self.recipe.data.lower().replace(',', '').split(' '):
                 r = Recipe.query.filter_by(name=t.lower()).first()
@@ -158,4 +221,7 @@ class ChapterForm(Form):
             db.session.add(c)
             db.session.commit()
         else:
-            raise(Exception("Wrong chapter adding"))
+            raise (Exception("Wrong chapter adding"))
+
+    def __len__(self):
+        return 3

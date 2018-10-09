@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block form %}
+
 <form action="" method="post" name="find">
     <div class="change">
     {{form.hidden_tag()}}
@@ -11,77 +12,92 @@
             <span class="error">[{{error}}]</span>
         {% endfor %}<br>
     </p>
-    <p class="change">
-        Source:<br>
-        {{ form.source }}<br>
-        {% for error in form.errors.source %}
-            <span class="error">[{{error}}]</span>
-        {% endfor %}<br>
-    </p>
-    <p class="change">
-        Time:<br>
-        {{ form.time }}<br>
-        {% for error in form.errors.time %}
-            <span class="error">[{{error}}]</span>
-        {% endfor %}<br>
-    </p>
-    <p class="change">
-        Level:<br>
-        {{ form.level }}<br>
-        {% for error in form.errors.level %}
-            <span class="error">[{{error}}]</span>
-        {% endfor %}<br>
-    </p>
-    <p class="change">
-        Calorific:<br>
-        {{ form.calorific }}<br>
-        {% for error in form.errors.calorific %}
-            <span class="error">[{{error}}]</span>
-        {% endfor %}<br>
-    </p>
-    <p class="change">
-        Chapter:<br>
-        {{ form.chapter }}<br>
-        {% for error in form.errors.chapter %}
-            <span class="error">[{{error}}]</span>
-        {% endfor %}<br>
-    </p>
-    <p class="change">
-        Preference:<br>
-        {{ form.preferences }}<br>
-        {% for error in form.errors.preference %}
-            <span class="error">[{{error}}]</span>
-        {% endfor %}<br>
-    </p>
-    <p class="change">
-        Ingredients:<br>
-        {{ form.ingredients }}<br>
-        {% for error in form.errors.ingredients %}
-            <span class="error">[{{error}}]</span>
-        {% endfor %}<br>
-    </p>
-    <p class="change">
-        Text:<br>
-        {{ form.text }}<br>
-        {% for error in form.errors.text %}
-            <span class="error">[{{error}}]</span>
-        {% endfor %}<br>
-    </p>
-    <p class="change button">
-        <input type="submit" class="" value="Confirm changes">
-    </p>
+    {% if chtype=='recipe' %}
+        <p class="change">
+            Source:<br>
+            {{ form.source }}<br>
+            {% for error in form.errors.source %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change">
+            Time:<br>
+            {{ form.time }}<br>
+            {% for error in form.errors.time %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change">
+            Level:<br>
+            {{ form.level }}<br>
+            {% for error in form.errors.level %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change">
+            Calorific:<br>
+            {{ form.calorific }}<br>
+            {% for error in form.errors.calorific %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change">
+            Chapter:<br>
+            {{ form.chapter }}<br>
+            {% for error in form.errors.chapter %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change">
+            Preference:<br>
+            {{ form.preferences }}<br>
+            {% for error in form.errors.preference %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change">
+            Ingredients:<br>
+            {{ form.ingredients }}<br>
+            {% for error in form.errors.ingredients %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change">
+            Text:<br>
+            {{ form.text }}<br>
+            {% for error in form.errors.text %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change button-recipe">
+            <input type="submit" class="" value="Confirm changes">
+        </p>
+    {% else %}
+        <p class="change">
+            Recipe:<br>
+            {{ form.recipe }}<br>
+            {% for error in form.errors.recipe %}
+                <span class="error">[{{error}}]</span>
+            {% endfor %}<br>
+        </p>
+        <p class="change button">
+            <input type="submit" class="" value="Confirm changes">
+        </p>
+    {% endif %}
+
     </div>
 </form>
+
 <table class="recipe">
 <tr><th>ID</th><th>Name</th><th>Source</th><th>Time</th><th>Level</th><th>Calorific</th><th>Text</th><th>Chapter</th>
     <th>Ingredient</th><th>Preference</th></tr>
 {% for recipe in contents_dict["recipe"] %}
     <tr>
-        {% if ((chtype == 'recipe') and ( ''|join(index) == ''|join(recipe.id) )) %}
+        {% if ((chtype == 'recipe') and ( index == recipe.id )) %}
             <td>{{ recipe.id }}</td>
-        {% for i in "Refactor" %}
-            <td> {{ i }} </td>
-        {% endfor %}
+            {% for i in "Refactor" %}
+                <td> {{ i }} </td>
+            {% endfor %}
         {% else %}
             {% for item in recipe %}
                 <td>{{ item }}</td>
@@ -95,36 +111,57 @@
 
 <table class="chapter">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
-{% for i in range(contents_dict["chapter"]|length) %}
+{% for chapter in contents_dict["chapter"] %}
     <tr>
-        {% for item in contents_dict["chapter"][i] %}
-            <td>{{ item }}</td>
-        {% endfor %}
-        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='chapter') }} ">Change</a></td>
+        {% if ( (chtype == 'chapter') and (index == chapter.id) ) %}
+            <td>{{ chapter.id }}</td>
+            <td> ------------------ </td>
+            <td> ------------------ </td>
+        {% else %}
+            {% for item in chapter %}
+                <td>{{ item }}</td>
+            {% endfor %}
+            <td class="after-bt"><a href="{{ url_for('change', changing=chapter.id, chtype='chapter') }}">Change</a></td>
+            <td class="after-bt"><a href="{{ url_for('delete', deleting=chapter.id, chtype='chapter') }}">Delete</a></td>
+        {% endif %}
     </tr>
 {% endfor %}
 </table>
 
 <table class="preference">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
-{% for i in range(contents_dict["preference"]|length) %}
+{% for preference in contents_dict["preference"] %}
     <tr>
-        {% for item in contents_dict["preference"][i] %}
-            <td>{{ item }}</td>
-        {% endfor %}
-        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='preference') }} ">Change</a></td>
+        {% if ((chtype == 'preference') and ( index == preference.id )) %}
+            <td>{{ preference.id }}</td>
+            <td> ------------------ </td>
+            <td> ------------------ </td>
+        {% else %}
+            {% for item in preference %}
+                <td>{{ item }}</td>
+            {% endfor %}
+            <td class="after-bt"><a href="{{ url_for('change', changing=preference.id, chtype='preference') }}">Change</a></td>
+            <td class="after-bt"><a href="{{ url_for('delete', deleting=preference.id, chtype='preference') }}">Delete</a></td>
+        {% endif %}
     </tr>
 {% endfor %}
 </table>
 
 <table class="ingredient">
 <tr><th>ID</th><th>Name</th><th>Recipes</th>
-{% for i in range(contents_dict["ingredient"]|length) %}
+{% for ingredient in contents_dict["ingredient"] %}
     <tr>
-        {% for item in contents_dict["ingredient"][i] %}
-            <td>{{ item }}</td>
-        {% endfor %}
-        <td class="after-bt"><a href="{{ url_for('index', index=i, changing='ingredient') }} ">Change</a></td>
+        {% if ((chtype == 'ingredient') and ( index == ingredient.id )) %}
+            <td>{{ ingredient.id }}</td>
+            <td> ------------------ </td>
+            <td> ------------------ </td>
+        {% else %}
+            {% for item in ingredient %}
+                <td>{{ item }}</td>
+            {% endfor %}
+            <td class="after-bt"><a href="{{ url_for('change', changing=ingredient.id, chtype='ingredient') }}">Change</a></td>
+            <td class="after-bt"><a href="{{ url_for('delete', deleting=ingredient.id, chtype='ingredient') }}">Delete</a></td>
+        {% endif %}
     </tr>
 {% endfor %}
 </table>
