@@ -1,13 +1,13 @@
 from flask_wtf import Form
 from wtforms import StringField, TextAreaField, IntegerField
-from wtforms.validators import AnyOf, Regexp, NoneOf, URL, Optional
+from wtforms.validators import AnyOf, Regexp, NoneOf, URL, Optional, DataRequired
 from models import *
 
 
 class Finder(Form):
     id = IntegerField('id', validators=[Regexp("\d*", message="Id must be an integer")])
     name = StringField('name',
-                       validators=[NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
+                       validators=[DataRequired(message='Name is required'), NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
 
     def get_item(self, i):
         return {
@@ -20,7 +20,7 @@ class Finder(Form):
         for i in range(len(self)):
             if self.get_item(i).data:
                 # contents = list(filter(lambda x: x.get_item(i) == self.get_item(i).data, contents))
-                contents = list(filter(lambda x: str(self.get_item(i).data) in str(x.get_item(i)), contents))
+                contents = list(filter(lambda x: str(self.get_item(i).data.lower()) in str(x.get_item(i)), contents))
         return contents
 
     def __len__(self):
@@ -58,11 +58,6 @@ class RecipeForm(Finder):
         if _id == 0:
             r = Recipe(name=self.name.data.lower(), source=self.source.data, time=self.time.data,
                        level=self.level.data, calorific=self.calorific.data, text=self.text.data.lower())
-            c = Chapter.query.filter_by(name=self.chapter.data.lower()).first()
-            if c:
-                r.chapter_id = c.id
-            else:
-                r.chapter_id = None
         else:
             r = Recipe.query.get(_id)
             r.name = self.name.data.lower()
@@ -71,52 +66,32 @@ class RecipeForm(Finder):
             r.level = self.level.data
             r.calorific = self.calorific.data
             r.text = self.text.data.lower()
+
+        if(self.chapter.data):
             c = Chapter.query.filter_by(name=self.chapter.data.lower()).first()
-            if c:
-                r.chapter_id = c.id
-            else:
-                r.chapter_id = None
+            if not c:
+                c = Chapter(name=self.chapter.data.lower())
+                db.session.add(c)
+                db.session.commit()
+            r.chapter_id = c.id
+            if r not in c.recipes:
+                c.recipes.append(r)
+
+        for ingr_name in self.ingredients.data.split(','):
+            if(ingr_name):
+                ingr = Ingredient.query.filter_by(name=ingr_name.strip().lower()).first()
+                if not ingr:
+                    ingr = Ingredient(name=ingr_name.strip().lower())
+                    db.session.add(ingr)
+                    db.session.commit()
+                ri = RecipeIngredient.query.filter_by(recipe_id=r.id, ingredient_id=ingr.id).first()
+                if not ri:
+                    ri = RecipeIngredient(recipe_id=r.id, ingredient_id=ingr.id)
+                    db.session.add(ri)
+                if ri not in r.rec_ingr:
+                    r.rec_ingr.append(ri)
         db.session.add(r)
         db.session.commit()
-        self.filler(Recipe.query.filter_by(name=self.name.data.lower(), source=self.source.data, time=self.time.data,
-                                           level=self.level.data, calorific=self.calorific.data,
-                                           text=self.text.data.lower()).first())
-
-    def filler(self, r):
-        if r:
-            added = []
-            for t in self.ingredients.data.lower().replace(',', '').split(' '):
-                i = Ingredient.query.filter_by(name=t.lower()).first()
-                if i:
-                    tmp = RecipeIngredient.query.filter_by(recipe_id=r.id, ingredient_id=i.id).first()
-                    if not tmp:
-                        tmp = RecipeIngredient(recipe_id=r.id, ingredient_id=i.id)
-                        r.rec_ingr.append(tmp)
-                        i.rec_ingr.append(tmp)
-                        db.session.add(i)
-                        db.session.add(tmp)
-                    added.append(tmp)
-            for tmp in r.rec_ingr:
-                if tmp not in added:
-                    db.session.delete(tmp)
-            added = []
-            for t in self.preferences.data.lower().replace(',', '').split(' '):
-                p = Preference.query.filter_by(name=t.lower()).first()
-                if p:
-                    tmp = RecipePreference.query.filter_by(recipe_id=r.id, preference_id=p.id).first()
-                    if not tmp:
-                        tmp = RecipePreference(recipe_id=r.id, preference_id=p.id)
-                        r.rec_pref.append(tmp)
-                        p.rec_pref.append(tmp)
-                        db.session.add(p)
-                        db.session.add(tmp)
-                    added.append(tmp)
-            for tmp in r.rec_pref:
-                if tmp not in added:
-                    db.session.delete(tmp)
-            db.session.commit()
-        else:
-            raise (Exception("Wrong recipe adding"))
 
 
 class IngredientForm(Finder):

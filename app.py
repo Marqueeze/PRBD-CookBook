@@ -21,7 +21,7 @@ statistics_dict = {
     "recipe": len(Recipe.query.all()),
     "ingredient": len(Ingredient.query.all()),
     "preference": len(Preference.query.all())
-}
+    }
 
 
 @app.route("/create/<instance>", methods=["GET", "POST"])
@@ -96,7 +96,7 @@ def find(instance):
     form = form_dict[instance.lower()]
     form = form()
     if form.validate_on_submit():
-        flash(instance.lower().capitalize()+'s: '+', '.join(list(str(x.id) for x in form.finder(contents_dict[instance]))))
+        flash(instance.lower().capitalize() + 's: ' + ', '.join(list(str(x.id) for x in form.finder(contents_dict[instance]))))
         return redirect(url_for('index'))
     return render_template("create.html", form=form, instance=instance, statistics_dict=statistics_dict)
 
