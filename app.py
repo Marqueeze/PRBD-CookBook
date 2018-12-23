@@ -9,6 +9,13 @@ form_dict = {
         "preference": PreferenceForm
     }
 
+find_form_dict = {
+        "chapter": FindChapter_Ingredient_PreferenceForm,
+        "recipe": FindRecipeForm,
+        "ingredient": FindChapter_Ingredient_PreferenceForm,
+        "preference": FindChapter_Ingredient_PreferenceForm
+    }
+
 instance_dict = {
     "chapter": Chapter,
     "recipe": Recipe,
@@ -27,13 +34,13 @@ statistics_dict = {
 @app.route("/create/<instance>", methods=["GET", "POST"])
 def create(instance):
     try:
-        form = form_dict[instance.lower()]
-        form = form()
+        form = form_dict[instance.lower()]()
         if form.validate_on_submit():
             form.create_instance()
             flash('{} added successfully'.format(instance.capitalize()))
             return redirect(url_for('index'))
-        return render_template("create.html", form=form, instance=instance.lower(), statistics_dict=statistics_dict)
+        return render_template("create.html", form=form, instance=instance.lower(), statistics_dict=statistics_dict,
+                               find_or_create="Create")
     except Exception:
         flash("An Error while creating")
         return redirect(url_for("index"))
@@ -59,8 +66,7 @@ def change(changing, chtype):
             "ingredient": Ingredient.query.all(),
             "preference": Preference.query.all()
         }
-        form = form_dict[chtype]
-        form = form()
+        form = form_dict[chtype]()
         if form.validate_on_submit():
             form.create_instance(_id=changing)
             flash('{} changed successfully'.format(chtype.capitalize()))
@@ -93,12 +99,13 @@ def find(instance):
         "ingredient": Ingredient.query.all(),
         "preference": Preference.query.all()
     }
-    form = form_dict[instance.lower()]
-    form = form()
-    if form.validate_on_submit():
-        flash(instance.lower().capitalize() + 's: ' + ', '.join(list(str(x.id) for x in form.finder(contents_dict[instance]))))
+    form = find_form_dict[instance.lower()]()
+    if form.is_submitted():
+        tmp = form.finder(contents_dict[instance])
+        flash(instance.lower().capitalize() + 's: ' + ', '.join(list(str(x.id) for x in tmp)) if len(tmp)!=0 else "Ничего не найдено")
         return redirect(url_for('index'))
-    return render_template("create.html", form=form, instance=instance, statistics_dict=statistics_dict)
+    return render_template("create.html", form=form, instance=instance, statistics_dict=statistics_dict,
+                           find_or_create="Find")
 
 
 def Clear_DB():

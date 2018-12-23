@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block form %}
-    <h1>Create {{ instance }}</h1>
+    <h1>{{ find_or_create }} {{ instance }}</h1>
     <form action="" method="post" name="find">
     {{form.hidden_tag()}}
     <p>
@@ -77,6 +77,6 @@
             {% endfor %}<br>
         </p>
     {% endif %}
-    <p><input type="submit" class="form-element button" value="Create"></p>
+    <p><input type="submit" class="form-element button" value="{{ find_or_create }}"></p>
 </form>
 {% endblock %}

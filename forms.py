@@ -4,10 +4,10 @@ from wtforms.validators import AnyOf, Regexp, NoneOf, URL, Optional, DataRequire
 from models import *
 
 
-class Finder(Form):
-    id = IntegerField('id', validators=[Regexp("\d*", message="Id must be an integer")])
-    name = StringField('name',
-                       validators=[DataRequired(message='Name is required'), NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")])
+class FindChapter_Ingredient_PreferenceForm(Form):
+    recipe = StringField('recipe')
+    name = StringField('name')
+    id = IntegerField('id')
 
     def get_item(self, i):
         return {
@@ -16,6 +16,9 @@ class Finder(Form):
             2: self.recipe
         }[i]
 
+    def __len__(self):
+        return 3
+
     def finder(self, contents: list):
         for i in range(len(self)):
             if self.get_item(i).data:
@@ -23,11 +26,61 @@ class Finder(Form):
                 contents = list(filter(lambda x: str(self.get_item(i).data.lower()) in str(x.get_item(i)), contents))
         return contents
 
+
+class FindRecipeForm(Form):
+    name = StringField('name')
+    id = IntegerField('id')
+    source = StringField('source')
+    time = StringField('time')
+    level = StringField('level')
+    calorific = StringField('calorific')
+    text = TextAreaField('text')
+    chapter = StringField('chapter')
+    preferences = StringField('preferences')
+    ingredients = StringField('ingredients')
+
+    def get_item(self, index):
+        return {
+            0: self.id,
+            1: self.name,
+            2: self.source,
+            3: self.time,
+            4: self.level,
+            5: self.calorific,
+            6: self.text,
+            7: self.chapter,
+            8: self.ingredients,
+            9: self.preferences
+        }[index]
+
     def __len__(self):
-        return 3
+        return 10
+
+    def finder(self, contents: list):
+        for i in range(len(self)):
+            if self.get_item(i).data:
+                # contents = list(filter(lambda x: x.get_item(i) == self.get_item(i).data, contents))
+                contents = list(filter(lambda x: str(self.get_item(i).data.lower()) in str(x.get_item(i)), contents))
+        return contents
 
 
-class RecipeForm(Finder):
+class BaseForm(Form):
+    name = StringField('name',
+                       validators=[
+                           DataRequired(message='Name is required'),
+                           NoneOf(['"', "'", ";", "/", "\\"], message="\", ', ;, /, \\ are not allowed")
+                       ])
+    id = IntegerField('id', validators=[Regexp("\d*", message="Id must be an integer")])
+
+    def get_item(self, i):
+        return {
+            0: self.id,
+            1: self.name,
+            2: self.recipe
+        }[i]
+
+
+class RecipeForm(BaseForm):
     source = StringField('source', validators=[URL(message="Source must be an URL"), Optional()])
     time = StringField('time', validators=[Regexp(".*")])
     level = StringField('level', validators=[Regexp("\d*", message="Level must be an integer")])
@@ -94,7 +147,7 @@ class RecipeForm(Finder):
         db.session.commit()
 
 
-class IngredientForm(Finder):
+class IngredientForm(BaseForm):
     recipe = StringField('recipe', validators=[Regexp(".*")])
 
     def create_instance(self, _id=0):
@@ -130,7 +183,7 @@ class IngredientForm(Finder):
             raise (Exception("Wrong ingredient adding"))
 
 
-class PreferenceForm(Finder):
+class PreferenceForm(BaseForm):
     recipe = StringField('recipe', validators=[Regexp(".*")])
 
     def create_instance(self, _id=0):
@@ -166,7 +219,7 @@ class PreferenceForm(Finder):
             raise (Exception("Wrong ingredient adding"))
 
 
-class ChapterForm(Finder):
+class ChapterForm(BaseForm):
     recipe = StringField('recipe', validators=[Regexp(".*")])
 
     def create_instance(self, _id=0):
