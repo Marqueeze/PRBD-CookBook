@@ -38,6 +38,7 @@ def create(instance):
         if form.validate_on_submit():
             form.create_instance()
             flash('{} added successfully'.format(instance.capitalize()))
+            statistics_dict[instance.lower()] = len(instance_dict[instance.lower()].query.all())
             return redirect(url_for('index'))
         return render_template("create.html", form=form, instance=instance.lower(), statistics_dict=statistics_dict,
                                find_or_create="Create")
@@ -86,6 +87,7 @@ def delete(deleting, chtype):
         inst = instance_dict[chtype].query.get(deleting)
         db.session.delete(inst)
         db.session.commit()
+        statistics_dict[chtype] = len(instance_dict[chtype].query.all())
     except Exception:
         flash("An Error while deleting")
     return redirect(url_for('index'))
